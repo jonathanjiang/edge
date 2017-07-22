@@ -3,12 +3,18 @@
  */
 package com.qianmi.edge;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.alibaba.fastjson.serializer.JSONSerializer;
+import com.alibaba.fastjson.serializer.JSONSerializerMap;
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -159,9 +165,8 @@ public class InterfaceLoader {
         try {
             Class<?> clazz = Class.forName(clazzName);
             logger.debug("got {} in registry !!!!", clazzName);
-
             Method[] methods = clazz.getDeclaredMethods();
-
+            String basepackagename=clazz.getPackage().getName();
             for (Method method : methods) {
                 String methodName = method.getName();
                 if (methodName.equals(inputMethodName))
@@ -179,7 +184,16 @@ public class InterfaceLoader {
                                     } else if (type.isArray()) {
                                         objs[i] = new Object[0];
                                     } else {
-                                        objs[i] = type.newInstance();
+                                        objs[i] =GetObjectInstance( type,basepackagename);// type.newInstance();
+//                                        Field[] fields= type.getDeclaredFields();
+//                                        for (Field field:fields) {
+//                                            Class<?> filedType=field.getType();
+//                                          Package filedpackage=  filedType.getPackage();
+//                                            if(filedpackage!=null&&filedpackage.getName().startsWith(basepackagename) ){
+//                                                field.setAccessible(true);
+//                                                field.set(  objs[i] ,filedType.newInstance());
+//}
+//                                        }
                                     }
                                 } catch (Exception e) {
                                     objs[i] = null;
@@ -187,7 +201,7 @@ public class InterfaceLoader {
                                 }
                             }
                             paramDesc = JSON.toJSONString(objs, SerializerFeature.QuoteFieldNames,
-                                    SerializerFeature.WriteMapNullValue, SerializerFeature.WriteNullStringAsEmpty,
+                                    SerializerFeature.WriteMapNullValue,
                                     SerializerFeature.WriteNullListAsEmpty, SerializerFeature.SortField);
                         }
                     } catch (Exception e2) {
@@ -257,5 +271,26 @@ public class InterfaceLoader {
         } catch (Exception e) {
             return false;
         }
+    }
+    public  static Object GetObjectInstance(Class<?> type,String basepackagename )
+    {
+        try {
+
+            Object obj = type.newInstance();
+            Field[] fields = type.getDeclaredFields();
+            for (Field field : fields) {
+                Class<?> filedType = field.getType();
+                Package filedpackage = filedType.getPackage();
+                if (filedpackage != null && filedpackage.getName().startsWith(basepackagename)) {
+                    field.setAccessible(true);
+                    field.set(obj,GetObjectInstance( filedType,basepackagename));
+
+                }
+            }
+            return obj;
+        }
+        catch (Exception ex)
+        {}
+        return null;
     }
 }

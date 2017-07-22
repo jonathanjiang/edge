@@ -19,18 +19,9 @@
         <property name="ignoreUnresolvablePlaceholders" value="true" />
         <property name="locations">
             <list>
-                <!-- 欧飞自有dubbo规范默认配置文件加载 -->
-                <value>classpath*:/META-INF/qianmi/dubbo/consumer/*.properties</value>
-                <value>classpath*:/META-INF/qianmi/api/config/*.properties</value>
-                <value>classpath*:/META-INF/ofpay/api/config/*.properties</value>
-                
-                <!-- 单元测试配置 -->
-                <value>classpath:config.properties</value>
                 <!-- 自测配置 -->
                 <value>/WEB-INF/config.properties</value>
-                <!-- 生产环境 -->
-                <value>file:/apps/temp1/config.properties</value>
-                
+
                 <!-- 第三方测试包配置文件加载 -->
                 <value>/WEB-INF/thirdpart/*.properties</value>
                 
